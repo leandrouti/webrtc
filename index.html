@@ -3,9 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web RTC demo</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
 </head>
 <body>
-    <script src="./functions.js"></script>
+
+    <video autoplay></video>
+
+    <button onclick="stopVideo()">Stop</button>
+
+    <select name="" id="audioSource"></select>
+    <select name="" id="videoSource"></select>
+    
+<script src="./functions.js"></script>
+<script type="text/javascript">
+
+var mainStream = null;
+
+const video = document.querySelector('video');
+
+const audioSelect = document.querySelector('select#audioSource');
+const videoSelect = document.querySelector('select#videoSource');
+
+
+function hasGetUserMedia(){
+    return !! (navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+
+function stopVideo(){
+    mainStream.getVideoTracks()[0].stop();
+    // mainStream[0].stop();
+}
+
+function getDevices(deviceInfos){
+    for(let i = 0; i !== deviceInfos.length; ++i){
+        const deviceInfo = deviceInfos[i];
+        const option = document.createElement('option');
+        option.value = deviceInfo.deviceId;
+        if(deviceInfo.kind === 'audioinput'){
+            option.text = deviceInfo.label || 'microphone ' + (audioSelect.length + 1);
+            audioSelect.appendChild(option);
+        } else if (deviceInfo.kind === 'videoinput'){
+            option.text = deviceInfo.label || 'camera ' + (videoSelect.length + 1);
+            videoSelect.appendChild(option);
+        } else {
+            console.log('found another kind of device', deviceInfo);
+        }
+    }
+}
+
+function getStream(){
+    if(window.stream){
+        window.stream.getVideoTracks().forEach(function(track){
+            track.stop();
+        });
+    }
+}
+
+function handleError(error){
+    console.log(error);
+}
+
+if(hasGetUserMedia()){
+    const constraints = {
+        video: {
+            width: {
+                max: 1280
+            },
+            height: {
+                max: 720
+            }
+        }
+    };
+
+    
+
+
+    navigator.mediaDevices.enumerateDevices()
+        .then(getDevices).then(getStream).catch(handleError);
+
+        audioSelect.onchange = getStream;
+        videoSelect.onchange = getStream;
+
+
+    // // get video
+    // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+    //     mainStream = stream;
+    //     console.log(stream);
+    //     console.log(stream.getVideoTracks());
+    //     video.srcObject = mainStream;
+    // });
+
+    let devices = navigator.mediaDevices.enumerateDevices();
+
+    console.log(devices);
+} else {
+    alert('getusermedia is not supported');
+}
+</script>
 </body>
 </html>
